@@ -6,7 +6,7 @@ Mechanical rules. Match the codebase, don't improve it in passing. Full derivati
 
 - Routers (`backend/api/routers/`) are thin: validate, delegate to services, shape the response. Services (`backend/services/`) own ML/pipeline logic. Core (`backend/core/`) has no ML deps.
 - **Never import `api.*` from `services.*` or `core.*`** — routers already import downward; going upward creates cycles. Services communicate upward via return values or `core.event_bus.emit(...)`.
-- **Never run PyTorch/heavy work inline in an `async def` route.** Wrap it: `await loop.run_in_executor(_gpu_pool, fn, *args)` (see `backend/api/routers/generation.py`). The `_gpu_pool` is single-worker on purpose — it serializes GPU access; don't widen it.
+- **Never run PyTorch/heavy work inline in an `async def` route.** Wrap it: `await loop.run_in_executor(_gpu_pool, fn, *args)` (see `backend/api/routers/generation.py`). The pool's worker count is device-probed in `model_manager.py:_pick_gpu_workers()` (1 on MPS and on any probe failure) and the pool is built lazily via module `__getattr__` — route ALL GPU work through it; never spawn your own executor for torch work or resize the pool locally.
 - Never write to the project root at runtime; all user data goes under `backend/core/config.py:get_app_data_dir()`.
 
 ## Frontend

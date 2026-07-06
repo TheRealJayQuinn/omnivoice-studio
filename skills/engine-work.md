@@ -1,6 +1,6 @@
 # Working On TTS/ASR Engines
 
-Engines are the highest-blast-radius code in the repo: seven TTS backends plus ASR share one venv, one HF cache, and one registry, and users have already-installed on-disk engine state that must survive your change. Adding or touching an engine follows a fixed shape.
+Engines are the highest-blast-radius code in the repo: the TTS backends (eight-plus `TTSBackend` subclasses in the registry, and growing) plus ASR share one venv, one HF cache, and one registry, and users have already-installed on-disk engine state that must survive your change. Adding or touching an engine follows a fixed shape.
 
 ## The procedure (adding an engine)
 
@@ -21,7 +21,7 @@ Engines are the highest-blast-radius code in the repo: seven TTS backends plus A
 
 ## Rules I was following
 
-- **Subprocess env injection follows the canonical site** (`sonitranslate.py:148`): inject only the vars the child needs (`HF_TOKEN` + the child's alias), sourced from the token resolver, never a blanket env copy.
+- **Subprocess env injection goes through the canonical helper** `backend/services/engine_env.py:build_engine_env()` (reference caller: `sonitranslate.py`'s `start()`): inject only the vars the child needs (`HF_TOKEN` + the child's alias), sourced from the token resolver, never a blanket env copy.
 - **Freeform paths/URLs are a supply-chain surface.** Quant/variant selection is a dropdown over a shipped map (`quant_map.json`), not a text field. Same rule as PyPI mirrors: allow-list, never freeform.
 - **Availability probes swallow errors by design — so you must not rely on them while debugging.** `uv run python -c "import <module>"` tells the truth; `is_available()` tells the user-safe version.
 

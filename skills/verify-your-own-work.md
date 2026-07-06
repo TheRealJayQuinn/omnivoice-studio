@@ -11,7 +11,7 @@ Run every rung that applies, in this order. Stop and fix at the first failure.
 3. **The module's existing tests** — `uv run pytest tests/test_<area>*.py -x`.
 4. **Full suite** — `uv run pytest tests/`. Never run bare `pytest` from an unusual cwd: pytest is configured with `testpaths = ["tests"]` because `research/` contains 1.2 GB of vendored projects whose test files call `sys.exit` at module import and will INTERNALERROR the run.
 5. **Smoke tests** — `uv run pytest tests/smoke/` (boot smoke) and, before anything release-shaped, `bun run smoke-test:quick`. These catch "my unit tests pass but the app no longer boots."
-6. **Regression fixture** — if you touched the DB schema, migrations, or `omnivoice_data/` layout, run the tests that load `tests/fixtures/omnivoice_data/` (a real v0.2.7-style user state: 1 voice, 1 DB, 1 prefs row). Backward compatibility is a hard constraint, not a nice-to-have.
+6. **Regression fixture** — if you touched the DB schema, migrations, or `omnivoice_data/` layout, run the tests that load `tests/fixtures/omnivoice_data/` (a frozen prior-version user state — DB + voices — loaded by `tests/smoke/test_boot_smoke.py` on every PR; never edit it by hand, regenerate via `scripts/seed-test-fixture.py`). Backward compatibility is a hard constraint, not a nice-to-have.
 7. **Cross-platform reasoning** — CI runs the Python backend on Linux only. See `skills/cross-platform-parity.md`; you must verify macOS/Windows behavior by reading, not by hoping.
 
 ## Rules I was following (write these down because they are invisible)
@@ -30,7 +30,7 @@ grep -RnE "os\.(environ|getenv).*HF_TOKEN" backend/ --include='*.py' \
   | grep -v token_resolver.py | grep -v '^[[:space:]]*#'
 ```
 
-Exit code 1 (zero matches) = done. The summary (`.planning/phases/01-.../01-01-SUMMARY.md`) records: 5 read sites patched, the grep gate output, 35 new tests green, AND "Phase 0 smoke tests: 4/4 still green (no regression)". The pre-existing gates being re-run is what made the claim "done" trustworthy — the fix-regression cycle (see `skills/failure-patterns.md`) is this project's central failure mode, and re-running old gates is the only mechanical defense.
+Exit code 1 (zero matches) = done. The summary (`.planning/phases/01-install-token-persistence-docs-scaffolding-error-ux/01-01-SUMMARY.md`) records: 5 read sites patched, the grep gate output, 35 new tests green, AND "Phase 0 smoke tests: 4/4 still green (no regression)". The pre-existing gates being re-run is what made the claim "done" trustworthy — the fix-regression cycle (see `skills/failure-patterns.md`) is this project's central failure mode, and re-running old gates is the only mechanical defense.
 
 ## Failure signs
 

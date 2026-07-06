@@ -6,7 +6,7 @@ Debugging here is a search problem, not a creativity problem. The bug you're loo
 
 1. **Get the exact error string.** Not a paraphrase. From the user report, `backend.log`, or a local repro. The exact string is your search key.
 2. **Reproduce, or explain precisely why you can't.** If the bug is platform- or GPU-specific and you can't repro, you must instead build the causal chain by reading code (step 4) and state in the fix what you could and couldn't verify.
-3. **Search this codebase for the error class first.** `grep -rn "<distinctive fragment>" backend/ tests/`. Six TTS engines, ASR, and diarization share failure modes (model loading, pickling, HF auth, CUDA/MPS fallbacks) — a sibling subsystem has usually already handled yours.
+3. **Search this codebase for the error class first.** `grep -rn "<distinctive fragment>" backend/ tests/`. The many TTS engines, ASR, and diarization share failure modes (model loading, pickling, HF auth, CUDA/MPS fallbacks) — a sibling subsystem has usually already handled yours.
 4. **Build the causal chain before touching code.** Write it as: trigger → mechanism → symptom. If you can't fill in "mechanism," keep reading; a fix aimed at the symptom will regress something.
 5. **Prefer reusing an existing fix over writing a parallel one.** One chokepoint, two callers — never two copies of the same workaround that will drift.
 6. **Preserve the existing graceful fallback.** Most ML paths here have one (silence-gap heuristic when diarization fails, in-process engine when subprocess fails, CPU when GPU OOMs). Your fix must not remove it — the fallback is what keeps a partial failure from becoming a dead app.
