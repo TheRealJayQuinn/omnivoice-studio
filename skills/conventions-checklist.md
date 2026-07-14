@@ -12,7 +12,7 @@ Mechanical rules. Match the codebase, don't improve it in passing. Full derivati
 ## Frontend
 
 - **One Zustand store.** New state = new slice file in `frontend/src/store/`, spread into `frontend/src/store/index.ts`. Never `create()` a sibling store — it fragments persisted state across localStorage keys.
-- Backend URL comes from the central api-base module / `frontend/src/api/client.ts`. Never hardcode `localhost:3900` in a component (this exact hardcode broke Docker LAN mode, issue #80).
+- Backend URL is derived centrally: `frontend/src/api/client.ts` computes the base (same-origin in prod, `:3900` in dev) and `frontend/src/utils/apiBase.ts` is the shared helper components use. Never hardcode `localhost:3900` in a component — that exact hardcode broke Docker LAN mode (issue #80).
 - Errors: `apiFetch` throws `ApiError`; user-visible errors via `react-hot-toast`.
 
 ## i18n (hard rule, CI-enforced)
